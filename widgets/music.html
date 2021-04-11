@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="preconnect" href="https://fonts.gstatic.com">
+    <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet">
+    <title>Document</title>
+    <style>
+        body {
+            background-color: #222;
+            margin: 0;
+            overflow: hidden;
+            font-family: 'Press Start 2P', cursive;
+            width: 100vw;
+            height: 100vh;
+            user-select: none;
+            color: #FFF;
+            font-size: 1.4vw;
+        }
+
+        .video-wrapper {
+            width: 10px;
+            height: 10px;
+            position: absolute;
+            top: 0;
+            left: 0;
+            bottom: 0;
+            right: 0;
+            margin: auto;
+            text-align: center;
+        }
+
+        video {
+            position: absolute;
+            top: 0;
+            left: 0;
+            bottom: 0;
+            right: 0;
+            margin: auto;
+            transform: translateX(-50%);
+            width: 120vw;
+            height: 120vh;
+            position: absolute;
+            transition: background 0.5s ease;
+        }
+
+        .overlay {
+            position: absolute;
+            z-index: 999;
+            width: 100vw;
+            height: 100vh;
+        }
+
+        .details-wrapper {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            margin: 2rem;
+            border-radius: 10px;
+            padding: 1rem;
+            min-width: 40%;
+            width: 60vw;
+        }
+
+        .details-wrapper h1 {
+            white-space: nowrap;
+        }
+
+        #cover {
+            height: 100%;
+            border-radius: 10px;
+        }
+
+        .v-center {
+            position: relative;
+            top: 50%;
+            transform: translateY(-50%);
+        }
+
+    </style>
+</head>
+
+<body>
+
+    <div class="video-wrapper">
+        <video id="bg" loop muted autoplay src="/visualizer"></video>
+    </div>
+
+    <div class="overlay">
+        <div class="details-wrapper">
+            <div class="song-details" style="display: inline-block">
+                <h1 id="title"></h1>
+                <h3 id="artist"></h3>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.0.1/socket.io.min.js"></script>
+    <script>
+        const socket = io.connect("http://localhost:3000");
+        let music = new Audio();
+
+        function next() {
+            console.log("Requesting next song ...");
+            socket.emit("play");
+        }
+
+        socket.on("play", song => {
+            console.log("Playing", song);
+
+            document.getElementById("title").innerHTML = song.title;
+            document.getElementById("artist").innerHTML = song.artists.map(s => s.name).join(", ");
+
+            document.title = `Playing ` + song.title;
+
+            try {
+                music.src = `/stream/${song.id}.mp3`;
+                music.load();
+                music.play();
+            } catch (e) {
+                console.log("FAILED TO LOAD " + song.title)
+                return;
+            }
+
+        });
+
+        music.addEventListener("ended", next);
+        window.addEventListener("keydown", (e) => {
+            if (e.key === "ArrowRight" && music) next();
+        });
+
+        next();
+    </script>
+</body>
+
+</html>
