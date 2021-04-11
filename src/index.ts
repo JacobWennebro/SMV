@@ -61,11 +61,6 @@ import Stream from './Stream'
     app.use("/widget", Express.static("widgets"));
     app.use("/stream", Express.static(path.join(__dirname, "data/music")));
 
-    app.get("/visualizer/:id", (req, res) => {
-        if(fs.existsSync(path.resolve(__dirname, "data/visualizers/"+req.params.id))) res.sendFile(path.resolve(__dirname, "data/visualizers/"+req.params.id));
-        else res.send("failed to find video");
-    });
-
     const port = Number(process.env.PORT) || Number(config.server_port) || 3000;
 
     const server = app.listen(port, () => {
